@@ -1,4 +1,4 @@
-name: Build and Release Resume
+name: Build Résumé
 
 on:
   push:
@@ -16,28 +16,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+      - name: Set variables
+        id: var
+        run: |
+          PDF_NAME="gaurav_chauhan"
+          echo "pdf_name=$PDF_NAME" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
 
-      - name: Compile LaTeX Document
-        uses: xu-cheng/latex-action@v3
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Build résumé
+        uses: xu-cheng/latex-action@v4
         with:
-          root_file: resume.tex
+          root_file: main.tex
           args: -pdf -interaction=nonstopmode -synctex=1
 
-      - name: Generate Tag and Release Name
-        id: meta
-        run: |
-          DATE_TAG="v$(date +'%Y.%m.%d-%H%M%S')"
-          echo "tag=$DATE_TAG" >> $GITHUB_OUTPUT
-          echo "release_name="Resume Release - $(date +'%B %d, %Y')"" >> $GITHUB_OUTPUT
+      - name: Rename PDF
+        run: mv main.pdf "${{ steps.var.outputs.pdf_name }}.pdf"
 
-      - name: Create GitHub Release and Upload PDF
-        uses: softprops/action-gh-release@v1
+      - name: Upload résumé
+        uses: softprops/action-gh-release@v3
         with:
-          files: resume.pdf
-          tag_name: ${{ steps.meta.outputs.tag }}
-          name: ${{ steps.meta.outputs.release_name }}
-          body: "Automated LaTeX build of the latest resume update."
+          files: "${{ steps.var.outputs.pdf_name }}.pdf"
+          tag_name: "v${{ steps.var.outputs.timestamp }}"
+          name: ${{ steps.var.outputs.timestamp }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
