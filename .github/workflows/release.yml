@@ -1,4 +1,4 @@
-name: Build Résumé
+name: Build résumé
 
 on:
   push:
@@ -31,5 +31,6 @@ jobs:
           fail_on_unmatched_files: true
           files: "gaurav_chauhan.pdf"
           name: Build ${{ github.run_number }}
+          tag_name: Build ${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
