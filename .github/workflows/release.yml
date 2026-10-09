@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "**.tex"
+      - "**.typ"
   workflow_dispatch:
 
 permissions:
@@ -16,30 +16,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Set variables
-        id: var
-        run: |
-          PDF_NAME="gaurav_chauhan"
-          echo "pdf_name=$PDF_NAME" >> $GITHUB_OUTPUT
-          echo "timestamp=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
-
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Build résumé
-        uses: xu-cheng/latex-action@v4
-        with:
-          root_file: main.tex
-          args: -pdf -interaction=nonstopmode -synctex=1
+      - name: Install Typst
+        uses: typst-community/setup-typst@v5
 
-      - name: Rename PDF
-        run: mv main.pdf "${{ steps.var.outputs.pdf_name }}.pdf"
+      - name: Build resume
+        run: typst compile main.typ gaurav_chauhan.pdf
 
-      - name: Upload résumé
+      - name: Upload resume
         uses: softprops/action-gh-release@v3
         with:
-          files: "${{ steps.var.outputs.pdf_name }}.pdf"
-          tag_name: "v${{ steps.var.outputs.timestamp }}"
-          name: ${{ steps.var.outputs.timestamp }}
+          fail_on_unmatched_files: true
+          files: "gaurav_chauhan.pdf"
+          name: Build ${{ github.run_number }}
+          tag_name: v${{ github.run_number }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
